@@ -1,8 +1,7 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ConvexProvider } from "convex/react";
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "./ui/sonner";
 
@@ -16,9 +15,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 			enableSystem
 			disableTransitionOnChange
 		>
-			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+			<ConvexProvider client={convex}>
 				{children}
-			</ConvexProviderWithClerk>
+			</ConvexProvider>
 			<Toaster richColors />
 		</ThemeProvider>
 	);

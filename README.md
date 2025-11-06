@@ -9,7 +9,8 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **shadcn/ui** - Reusable UI components
 - **Convex** - Reactive backend-as-a-service platform
-- **Authentication** - Clerk
+- **Redis Caching** - Upstash Redis for performance optimization
+- **Rate Limiting** - Redis-based rate limiting to prevent abuse
 - **Turborepo** - Optimized monorepo build system
 
 ## Getting Started
@@ -28,7 +29,7 @@ This project uses Convex as a backend. You'll need to set up Convex before runni
 bun run dev:setup
 ```
 
-Follow the prompts to create a new Convex project and connect it to your application. See [Convex + Clerk guide](https://docs.convex.dev/auth/clerk) for auth setup.
+Follow the prompts to create a new Convex project and connect it to your application.
 
 Then, run the development server:
 
@@ -73,6 +74,16 @@ UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
 - **Cache expiration**: After 60 seconds, the next request will fetch from Convex again
 
 The demo displays response times and indicates whether data came from Redis cache or Convex database, allowing you to see the performance difference.
+
+## Rate Limiting
+
+This app implements Redis-based rate limiting to prevent abuse and protect free usage limits. Each operation type has its own independent rate limit:
+
+- **Fetch Todos**: 5 requests per minute (from Redis demo page)
+- **Add Todo**: 5 additions per minute (from home page)
+- **Todo Actions**: 5 toggle/delete actions per minute (from home page)
+
+Rate limits are enforced per IP address using sliding window algorithm with separate Redis keys for each operation type. When limits are exceeded, users see clear error messages with retry times.
 
 
 

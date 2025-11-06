@@ -24,7 +24,6 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "convex": "catalog:",
     "@redis-demo/backend": "workspace:*",
-    "@clerk/nextjs": "^6.31.5",
     "@upstash/redis": "^1.34.0"
   },
   "devDependencies": {

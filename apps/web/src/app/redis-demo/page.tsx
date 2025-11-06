@@ -11,6 +11,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, RefreshCw, Database, Zap } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Todo {
 	_id: string;
@@ -27,19 +28,22 @@ interface ApiResponse {
 export default function RedisDemoPage() {
 	const [response, setResponse] = useState<ApiResponse | null>(null);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 
 	const fetchTodos = async () => {
 		setLoading(true);
-		setError(null);
 
 		try {
 			const res = await fetch("/api/todos-cached");
-			if (!res.ok) throw new Error("Failed to fetch");
-			const data: ApiResponse = await res.json();
+			const data = await res.json();
+
+			if (!res.ok) {
+				toast.error(data.error || "Failed to fetch");
+				return;
+			}
+
 			setResponse(data);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Unknown error");
+			toast.error("Network error occurred");
 		} finally {
 			setLoading(false);
 		}
@@ -84,14 +88,6 @@ export default function RedisDemoPage() {
 					</Button>
 				</CardContent>
 			</Card>
-
-			{error && (
-				<Card className="mb-6 border-red-200 bg-red-50">
-					<CardContent className="pt-6">
-						<p className="text-red-600">Error: {error}</p>
-					</CardContent>
-				</Card>
-			)}
 
 			{response && (
 				<Card className="mb-6">
