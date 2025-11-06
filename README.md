@@ -39,6 +39,41 @@ bun run dev
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
 Your app will connect to the Convex cloud backend automatically.
 
+## Redis Cache Demo
+
+This project includes a Redis caching demonstration that shows how Upstash Redis can speed up Convex database queries.
+
+### Setup
+
+1. Create an Upstash Redis database at [upstash.com](https://upstash.com)
+
+2. Add the following environment variables to your `.env.local` file in the `apps/web` directory:
+
+```bash
+UPSTASH_REDIS_REST_URL=your_upstash_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
+```
+
+### Running the Demo
+
+1. **Home Page**: Visit [http://localhost:3001](http://localhost:3001) to use the todo app
+
+2. **Redis Demo**: Visit [http://localhost:3001/redis-demo](http://localhost:3001/redis-demo) in your browser
+
+3. Click "Fetch Todos" to see the first request (hits Convex database)
+
+4. Click "Fetch Todos" again immediately - notice the faster response time (hits Redis cache)
+
+5. Wait 60 seconds and click again - cache will have expired, so it hits Convex again
+
+### How It Works
+
+- **First request**: Data is fetched from Convex → stored in Redis with 60-second TTL
+- **Cached requests**: Data served from Redis (much faster!)
+- **Cache expiration**: After 60 seconds, the next request will fetch from Convex again
+
+The demo displays response times and indicates whether data came from Redis cache or Convex database, allowing you to see the performance difference.
+
 
 
 

@@ -1,46 +1,117 @@
 "use client";
-import { useQuery } from "convex/react";
+
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@redis-demo/backend/convex/_generated/api";
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+import type { Id } from "@redis-demo/backend/convex/_generated/dataModel";
 
 export default function Home() {
-	const healthCheck = useQuery(api.healthCheck.get);
+	const [newTodoText, setNewTodoText] = useState("");
+
+	const todos = useQuery(api.todos.getAll);
+	const createTodoMutation = useMutation(api.todos.create);
+	const toggleTodoMutation = useMutation(api.todos.toggle);
+	const deleteTodoMutation = useMutation(api.todos.deleteTodo);
+
+	const handleAddTodo = async (e: React.FormEvent) => {
+		e.preventDefault();
+		const text = newTodoText.trim();
+		if (!text) return;
+		await createTodoMutation({ text });
+		setNewTodoText("");
+	};
+
+	const handleToggleTodo = (id: Id<"todos">, currentCompleted: boolean) => {
+		toggleTodoMutation({ id, completed: !currentCompleted });
+	};
+
+	const handleDeleteTodo = (id: Id<"todos">) => {
+		deleteTodoMutation({ id });
+	};
 
 	return (
-		<div className="container mx-auto max-w-3xl px-4 py-2">
-			<pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-			<div className="grid gap-6">
-				<section className="rounded-lg border p-4">
-					<h2 className="mb-2 font-medium">API Status</h2>
-					<div className="flex items-center gap-2">
-						<div
-							className={`h-2 w-2 rounded-full ${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}`}
-						/>
-						<span className="text-sm text-muted-foreground">
-							{healthCheck === undefined
-								? "Checking..."
-								: healthCheck === "OK"
-									? "Connected"
-									: "Error"}
-						</span>
-					</div>
-				</section>
+		<div className="container mx-auto max-w-2xl px-4 py-8">
+			<div className="mb-8 text-center">
+				<h1 className="mb-2 text-3xl font-bold">Redis Todo Demo</h1>
+				<p className="text-muted-foreground">
+					A simple todo app with Redis caching demo
+				</p>
 			</div>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Todo List</CardTitle>
+					<CardDescription>Manage your tasks efficiently</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<form
+						onSubmit={handleAddTodo}
+						className="mb-6 flex items-center space-x-2"
+					>
+						<Input
+							value={newTodoText}
+							onChange={(e) => setNewTodoText(e.target.value)}
+							placeholder="Add a new task..."
+						/>
+						<Button type="submit" disabled={!newTodoText.trim()}>
+							Add
+						</Button>
+					</form>
+
+					{todos === undefined ? (
+						<div className="flex justify-center py-4">
+							<Loader2 className="h-6 w-6 animate-spin" />
+						</div>
+					) : todos.length === 0 ? (
+						<p className="py-4 text-center">No todos yet. Add one above!</p>
+					) : (
+						<ul className="space-y-2">
+							{todos.map((todo) => (
+								<li
+									key={todo._id}
+									className="flex items-center justify-between rounded-md border p-2"
+								>
+									<div className="flex items-center space-x-2">
+										<Checkbox
+											checked={todo.completed}
+											onCheckedChange={() =>
+												handleToggleTodo(todo._id, todo.completed)
+											}
+											id={`todo-${todo._id}`}
+										/>
+										<label
+											htmlFor={`todo-${todo._id}`}
+											className={`${todo.completed ? "line-through text-muted-foreground" : ""}`}
+										>
+											{todo.text}
+										</label>
+									</div>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => handleDeleteTodo(todo._id)}
+										aria-label="Delete todo"
+									>
+										<Trash2 className="h-4 w-4" />
+									</Button>
+								</li>
+							))}
+						</ul>
+					)}
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

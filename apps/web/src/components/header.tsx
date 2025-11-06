@@ -4,9 +4,8 @@ import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
 	const links = [
-		{ to: "/", label: "Home" },
-		{ to: "/dashboard", label: "Dashboard" },
-		{ to: "/todos", label: "Todos" },
+		{ to: "/", label: "Todos" },
+		{ to: "/redis-demo", label: "Redis Demo" },
 	] as const;
 
 	return (
